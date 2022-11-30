@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+project_name: tomato
+builds:
+  - env: [CGO_ENABLED=0]
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+nfpms:
+- maintainer: Faustin Date <root@faustind.dev>
+  description: A Simple pomodoro timer in your terminal.
+  homepage: https://github.com/faustind/tomato
+  license: UNLICENSE 
+  formats:
+  - deb
+  - rpm
