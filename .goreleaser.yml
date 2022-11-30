@@ -11,9 +11,9 @@ builds:
       - arm64
 nfpms:
 - maintainer: Faustin Date <root@faustind.dev>
-  description: A Simple pomodoro timer in your terminal.
+  description: A simple timer in your terminal.
   homepage: https://github.com/faustind/climer
-  license: UNLICENSE 
+  license: The MIT License 
   formats:
   - deb
   - rpm
