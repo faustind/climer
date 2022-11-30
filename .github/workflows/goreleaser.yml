@@ -4,7 +4,7 @@ on:
   push:
     # run only against tags
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"
+      - "v[0-9]+.[0-9]+.[0-9]+*"
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.19
           cache: true
       - run: go mod tidy
 
