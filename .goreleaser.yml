@@ -12,7 +12,7 @@ builds:
 nfpms:
 - maintainer: Faustin Date <root@faustind.dev>
   description: A Simple pomodoro timer in your terminal.
-  homepage: https://github.com/faustind/tomato
+  homepage: https://github.com/faustind/climer
   license: UNLICENSE 
   formats:
   - deb
