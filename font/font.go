@@ -1,10 +1,13 @@
-package main
+/*
+Package font implements a helper for writing digital clock symbols.
 
-import (
-	"strings"
+It is inspired by [painter].
 
-	"github.com/charmbracelet/lipgloss"
-)
+[painter]: https://github.com/guillaumebreton/gone/painter
+*/
+package font
+
+import "strings"
 
 var colon = `
 ..
@@ -121,20 +124,4 @@ func asArray(chars string) [][]rune {
 		}
 	}
 	return result
-}
-
-func drawChar(c rune) string {
-	b := strings.Builder{}
-	for _, row := range smallFont[c] {
-		for _, char := range row {
-			s := lipgloss.NewStyle().SetString(" ")
-			if char == rune('#') {
-				s = s.Background(lipgloss.Color("#43BF6D"))
-			}
-			b.WriteString(s.String())
-		}
-		b.WriteRune('\n')
-	}
-
-	return b.String()
 }

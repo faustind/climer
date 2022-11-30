@@ -1,12 +1,29 @@
+/*
+climer is a simple timer that runs from the command line.
+
+Usage of climer:
+
+	climer -d duration
+
+The flags are:
+
+	-d
+	    The duration of the timer as a string of unsigned
+	    decimal numbers, each with optional fraction and
+	    a unit suffix, such as "300ms", "1.5h" or "2h45m".
+	    Expected time units are "s", "m", "h".
+*/
 package main
 
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/faustind/climer/font"
 )
 
 type window struct {
@@ -14,30 +31,31 @@ type window struct {
 	height int
 }
 
-type Model struct {
+type model struct {
 	window window
+	hour   int
 	min    int
 	sec    int
 	done   bool
 }
 
-func initialModel(min, sec int) Model {
-	return Model{min: min, sec: sec, done: false}
+func initialModel(hour, min, sec int) model {
+	return model{hour: hour, min: min, sec: sec, done: false}
 }
 
-type TickMsg time.Time
+type tickMsg time.Time
 
 func Tick() tea.Cmd {
 	return tea.Tick(1*time.Second, func(t time.Time) tea.Msg {
-		return TickMsg(t)
+		return tickMsg(t)
 	})
 }
 
-func (m Model) Init() tea.Cmd {
+func (m model) Init() tea.Cmd {
 	return Tick()
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.width, m.window.height = msg.Width, msg.Height
@@ -48,8 +66,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
-	case TickMsg:
-		if m.min == 0 && m.sec == 0 {
+	case tickMsg:
+		if m.hour == 0 && m.min == 0 && m.sec == 0 {
 			m.done = true
 		}
 
@@ -57,12 +75,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
-		min, sec := m.min, m.sec-1
+		hour, min, sec := m.hour, m.min, m.sec-1
 		if sec < 0 {
 			min, sec = min-1, 59
 		}
 
-		m.min, m.sec = min, sec
+		if min < 0 {
+			hour, min = hour-1, 59
+		}
+
+		m.hour, m.min, m.sec = hour, min, sec
 
 		return m, Tick()
 	}
@@ -70,11 +92,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) View() string {
-	timerStr := fmt.Sprintf("%02d:%02d", m.min, m.sec)
+func (m model) View() string {
+	timerStr := ""
+	if m.hour > 0 {
+		timerStr = fmt.Sprintf("%02d:", m.hour)
+	}
+	timerStr = timerStr + fmt.Sprintf("%02d:%02d", m.min, m.sec)
 	timer := ""
 	for _, c := range timerStr {
-		timer = lipgloss.JoinHorizontal(lipgloss.Center, timer, drawChar(c))
+		timer = lipgloss.JoinHorizontal(lipgloss.Center, timer, font.DrawChar(c))
 	}
 
 	ui := lipgloss.Place(
@@ -87,16 +113,25 @@ func (m Model) View() string {
 
 func main() {
 
-	var d = flag.Duration("duration", 1*time.Minute+30*time.Second, "duration of the timer.")
+	var d = flag.Duration("d", 1*time.Minute+30*time.Second, "Duration of the timer.")
 
 	flag.Parse()
 
 	seconds := int(d.Seconds())
+	if seconds < 0 {
+		fmt.Print("You already have no time left hehe\n")
+		os.Exit(1)
+	}
+
 	minutes := seconds / 60
 	seconds = seconds % 60
+	hours := minutes / 60
+	minutes = minutes % 60
 
-	p := tea.NewProgram(initialModel(minutes, seconds), tea.WithAltScreen())
+	p := tea.NewProgram(initialModel(hours, minutes, seconds), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
 	}
+	os.Exit(0)
 }
