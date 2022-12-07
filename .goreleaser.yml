@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-project_name: tomato
+project_name: climer
 builds:
   - env: [CGO_ENABLED=0]
     goos:
